@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import entryRoutes from "./routes/entry.routes";
+import roomRoutes from "./routes/room.routes";
 
 dotenv.config();
 
@@ -15,6 +16,7 @@ app.use(express.json());                             // Parse JSON request bodie
 // ── Routes ────────────────────────────────────────────────────────────────────
 // All entry-related routes are mounted under /api
 app.use("/api", entryRoutes);
+app.use("/api", roomRoutes);
 
 // ── Start ─────────────────────────────────────────────────────────────────────
 app.listen(PORT, () => {

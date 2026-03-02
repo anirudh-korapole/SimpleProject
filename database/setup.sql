@@ -24,8 +24,24 @@ BEGIN
 END
 GO
 
--- 3. (Optional) verify the schema
-SELECT COLUMN_NAME, DATA_TYPE, IS_NULLABLE
+-- 3. Create the RoomBookings table (skip if it already exists)
+IF NOT EXISTS (
+    SELECT * FROM sys.tables WHERE name = 'RoomBookings' AND type = 'U'
+)
+BEGIN
+    CREATE TABLE RoomBookings (
+        id         INT          NOT NULL IDENTITY(1,1) PRIMARY KEY,
+        entryId    INT          NOT NULL REFERENCES Entries(id),  -- FK → Entries
+        roomNumber NVARCHAR(50) NOT NULL,
+        numGuests  INT          NOT NULL,
+        createdAt  DATETIME     NOT NULL DEFAULT GETDATE()
+    );
+END
+GO
+
+-- 4. (Optional) verify the schema
+SELECT TABLE_NAME, COLUMN_NAME, DATA_TYPE, IS_NULLABLE
 FROM   INFORMATION_SCHEMA.COLUMNS
-WHERE  TABLE_NAME = 'Entries';
+WHERE  TABLE_NAME IN ('Entries', 'RoomBookings')
+ORDER  BY TABLE_NAME, ORDINAL_POSITION;
 GO

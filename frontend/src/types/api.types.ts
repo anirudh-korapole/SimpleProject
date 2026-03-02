@@ -8,6 +8,14 @@ export interface Entry {
   createdAt: string; // ISO 8601 string after JSON serialisation
 }
 
+export interface RoomBooking {
+  id: number;
+  entryId: number;
+  roomNumber: string;
+  numGuests: number;
+  createdAt: string;
+}
+
 export interface ApiResponse<T = undefined> {
   success: boolean;
   message: string;
