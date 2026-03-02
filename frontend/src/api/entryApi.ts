@@ -10,11 +10,11 @@ import { ApiResponse, Entry } from "../types/api.types";
  *       → EntryController → EntryService → EntryRepository → SQL Server
  *       → response bubbles back here → component shows success message.
  */
-export async function submitEntry(textValue: string): Promise<ApiResponse<Entry>> {
+export async function submitEntry(textValue: string, email: string): Promise<ApiResponse<Entry>> {
   const response = await fetch("/api/submit", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ textValue }),
+    body: JSON.stringify({ textValue, email }),
   });
 
   // Parse JSON regardless of status code so we can surface server error messages.

@@ -7,6 +7,7 @@ type FormStatus = "idle" | "loading" | "success" | "error";
 
 const EntryForm: React.FC = () => {
   const [textValue, setTextValue] = useState<string>("");
+  const [email, setEmail] = useState<string>("");
   const [status, setStatus] = useState<FormStatus>("idle");
   const [savedEntry, setSavedEntry] = useState<Entry | null>(null);
   const [errorMessage, setErrorMessage] = useState<string>("");
@@ -27,15 +28,23 @@ const EntryForm: React.FC = () => {
       return;
     }
 
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email.trim() || !emailRegex.test(email.trim())) {
+      setStatus("error");
+      setErrorMessage("Please enter a valid email address.");
+      return;
+    }
+
     setStatus("loading");
     setErrorMessage("");
 
-    const result = await submitEntry(textValue);
+    const result = await submitEntry(textValue, email);
 
     if (result.success && result.data) {
       setStatus("success");
       setSavedEntry(result.data);
-      setTextValue(""); // clear the input after a successful save
+      setTextValue("");
+      setEmail("");
     } else {
       setStatus("error");
       setErrorMessage(result.message || "Something went wrong.");
@@ -47,6 +56,7 @@ const EntryForm: React.FC = () => {
     setSavedEntry(null);
     setErrorMessage("");
     setTextValue("");
+    setEmail("");
   };
 
   return (
@@ -86,6 +96,18 @@ const EntryForm: React.FC = () => {
             value={textValue}
             onChange={(e) => setTextValue(e.target.value)}
             placeholder="Enter some text…"
+            style={styles.input}
+            disabled={status === "loading"}
+          />
+          <label htmlFor="email" style={styles.label}>
+            Email
+          </label>
+          <input
+            id="email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="you@example.com"
             style={styles.input}
             disabled={status === "loading"}
           />

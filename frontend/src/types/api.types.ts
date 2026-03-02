@@ -4,6 +4,7 @@
 export interface Entry {
   id: number;
   textValue: string;
+  email: string;
   createdAt: string; // ISO 8601 string after JSON serialisation
 }
 

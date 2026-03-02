@@ -18,6 +18,7 @@ BEGIN
     CREATE TABLE Entries (
         id         INT           NOT NULL IDENTITY(1,1) PRIMARY KEY, -- auto-increment PK
         textValue  NVARCHAR(MAX) NOT NULL,
+        email      NVARCHAR(320) NOT NULL,
         createdAt  DATETIME      NOT NULL DEFAULT GETDATE()          -- server-side timestamp
     );
 END

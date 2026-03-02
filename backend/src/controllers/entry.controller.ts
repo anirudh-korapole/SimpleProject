@@ -17,10 +17,10 @@ const entryService = new EntryService();
  *  4. Return 400 for validation errors, 500 for unexpected errors.
  */
 export async function submitEntry(req: Request, res: Response): Promise<void> {
-  const { textValue } = req.body as SubmitRequest;
+  const { textValue, email } = req.body as SubmitRequest;
 
   try {
-    const entry = await entryService.submitEntry(textValue);
+    const entry = await entryService.submitEntry(textValue, email);
 
     const response: ApiResponse<Entry> = {
       success: true,
@@ -33,7 +33,7 @@ export async function submitEntry(req: Request, res: Response): Promise<void> {
     const err = error as Error;
 
     // Validation errors coming from the service layer → 400 Bad Request
-    if (err.message.includes("must not be empty")) {
+    if (err.message.includes("must not be empty") || err.message.includes("is not valid")) {
       const response: ApiResponse = {
         success: false,
         message: err.message,

@@ -16,13 +16,21 @@ export class EntryService {
    * Throws a descriptive Error if validation fails so the controller
    * can translate it into the appropriate HTTP status code.
    */
-  async submitEntry(textValue: string): Promise<Entry> {
-    // Business rule: the value must be a non-empty string after trimming whitespace.
+  async submitEntry(textValue: string, email: string): Promise<Entry> {
     if (!textValue || textValue.trim().length === 0) {
       throw new Error("textValue must not be empty");
     }
 
-    // Persist and return the created entry.
-    return this.repository.create(textValue.trim());
+    if (!email || email.trim().length === 0) {
+      throw new Error("email must not be empty");
+    }
+
+    // Basic email format check.
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email.trim())) {
+      throw new Error("email is not valid");
+    }
+
+    return this.repository.create(textValue.trim(), email.trim());
   }
 }
