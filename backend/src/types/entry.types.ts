@@ -4,6 +4,7 @@
 export interface SubmitRequest {
   textValue: string;
   email: string;
+  phone: string;
 }
 
 /** A row from the Entries table */
@@ -11,6 +12,7 @@ export interface Entry {
   id: number;
   textValue: string;
   email: string;
+  phone: string;
   createdAt: Date;
 }
 

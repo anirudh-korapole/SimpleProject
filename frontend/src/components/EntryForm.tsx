@@ -1,25 +1,29 @@
 import React, { useState } from "react";
+import { signOut } from "firebase/auth";
+import { auth } from "../config/firebase";
 import { submitEntry } from "../api/entryApi";
 import { Entry } from "../types/api.types";
 
 type FormStatus = "idle" | "loading" | "error";
 
 interface Props {
-  onSuccess: (entry: Entry) => void; // called by App.tsx to advance to step 2
+  onSuccess: (entry: Entry) => void;
 }
 
 const EntryForm: React.FC<Props> = ({ onSuccess }) => {
-  const [textValue, setTextValue] = useState<string>("");
-  const [email, setEmail] = useState<string>("");
+  const phone = auth.currentUser?.phoneNumber ?? "";
+
+  const [textValue, setTextValue] = useState("");
+  const [email, setEmail] = useState("");
   const [status, setStatus] = useState<FormStatus>("idle");
-  const [errorMessage, setErrorMessage] = useState<string>("");
+  const [errorMessage, setErrorMessage] = useState("");
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (!textValue.trim()) {
       setStatus("error");
-      setErrorMessage("Please enter a name before submitting.");
+      setErrorMessage("Please enter your name.");
       return;
     }
 
@@ -33,10 +37,9 @@ const EntryForm: React.FC<Props> = ({ onSuccess }) => {
     setStatus("loading");
     setErrorMessage("");
 
-    const result = await submitEntry(textValue, email);
+    const result = await submitEntry(textValue, email, phone);
 
     if (result.success && result.data) {
-      // Hand the saved entry up to App.tsx — it will swap in the room booking form.
       onSuccess(result.data);
     } else {
       setStatus("error");
@@ -47,18 +50,23 @@ const EntryForm: React.FC<Props> = ({ onSuccess }) => {
   return (
     <div style={styles.card}>
       <p style={styles.step}>Step 1 of 2</p>
-      <h1 style={styles.heading}>Your Details</h1>
+
+      <div style={styles.headerRow}>
+        <h1 style={styles.heading}>Your Details</h1>
+        <button onClick={() => signOut(auth)} style={styles.signOutBtn}>Sign out</button>
+      </div>
+
+      <div style={styles.phoneBadge}>
+        <span style={styles.phoneBadgeLabel}>Logged in as</span>
+        <span style={styles.phoneBadgeNumber}>{phone}</span>
+      </div>
 
       {status === "error" && (
-        <div style={{ ...styles.banner, ...styles.errorBanner }}>
-          {errorMessage}
-        </div>
+        <div style={{ ...styles.banner, ...styles.errorBanner }}>{errorMessage}</div>
       )}
 
       <form onSubmit={handleSubmit} style={styles.form}>
-        <label htmlFor="textValue" style={styles.label}>
-          Name
-        </label>
+        <label htmlFor="textValue" style={styles.label}>Name</label>
         <input
           id="textValue"
           type="text"
@@ -68,9 +76,8 @@ const EntryForm: React.FC<Props> = ({ onSuccess }) => {
           style={styles.input}
           disabled={status === "loading"}
         />
-        <label htmlFor="email" style={styles.label}>
-          Email
-        </label>
+
+        <label htmlFor="email" style={styles.label}>Email</label>
         <input
           id="email"
           type="email"
@@ -80,6 +87,7 @@ const EntryForm: React.FC<Props> = ({ onSuccess }) => {
           style={styles.input}
           disabled={status === "loading"}
         />
+
         <button
           type="submit"
           style={styles.button}
@@ -108,19 +116,40 @@ const styles: Record<string, React.CSSProperties> = {
     textTransform: "uppercase",
     letterSpacing: "0.05em",
   },
-  heading: {
-    marginTop: 0,
-    fontSize: "1.5rem",
+  headerRow: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: "0.75rem",
   },
+  heading: { margin: 0, fontSize: "1.5rem" },
+  signOutBtn: {
+    background: "none",
+    border: "none",
+    color: "#888",
+    cursor: "pointer",
+    fontSize: "0.85rem",
+    padding: 0,
+  },
+  phoneBadge: {
+    display: "flex",
+    alignItems: "center",
+    gap: "0.5rem",
+    backgroundColor: "#d4edda",
+    border: "1px solid #c3e6cb",
+    borderRadius: 4,
+    padding: "0.4rem 0.75rem",
+    fontSize: "0.9rem",
+    marginBottom: "1rem",
+  },
+  phoneBadgeLabel: { color: "#555" },
+  phoneBadgeNumber: { fontWeight: 600, color: "#155724" },
   form: {
     display: "flex",
     flexDirection: "column",
     gap: "0.75rem",
-    marginTop: "1rem",
   },
-  label: {
-    fontWeight: 600,
-  },
+  label: { fontWeight: 600 },
   input: {
     padding: "0.6rem 0.75rem",
     fontSize: "1rem",

@@ -16,7 +16,7 @@ export class EntryService {
    * Throws a descriptive Error if validation fails so the controller
    * can translate it into the appropriate HTTP status code.
    */
-  async submitEntry(textValue: string, email: string): Promise<Entry> {
+  async submitEntry(textValue: string, email: string, phone: string): Promise<Entry> {
     if (!textValue || textValue.trim().length === 0) {
       throw new Error("textValue must not be empty");
     }
@@ -31,6 +31,10 @@ export class EntryService {
       throw new Error("email is not valid");
     }
 
-    return this.repository.create(textValue.trim(), email.trim());
+    if (!phone || phone.trim().length === 0) {
+      throw new Error("phone must not be empty");
+    }
+
+    return this.repository.create(textValue.trim(), email.trim(), phone.trim());
   }
 }

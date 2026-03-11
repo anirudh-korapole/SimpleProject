@@ -1,28 +1,20 @@
-// Controller layer — handles HTTP for room bookings.
-
 import { Request, Response } from "express";
 import { RoomBookingService } from "../services/room.service";
 import { CreateRoomBookingRequest, ApiResponse, RoomBooking } from "../types/room.types";
 
 const roomBookingService = new RoomBookingService();
 
-/**
- * POST /api/room-booking
- *
- * Flow:
- *  1. Parse { entryId, roomNumber, numGuests } from body.
- *  2. Call RoomBookingService.createBooking() — validates + persists.
- *  3. Return 201 with the created booking on success.
- *  4. Return 400 for validation errors, 500 for unexpected errors.
- */
 export async function createRoomBooking(req: Request, res: Response): Promise<void> {
-  const { entryId, roomNumber, numGuests } = req.body as CreateRoomBookingRequest;
+  const { entryId, roomTypeId, checkIn, checkOut, guests } = req.body as CreateRoomBookingRequest;
 
   try {
-    // Parse numGuests to int in case it arrives as a string from the form.
-    const guests = typeof numGuests === "string" ? parseInt(numGuests, 10) : numGuests;
-
-    const booking = await roomBookingService.createBooking(entryId, roomNumber, guests);
+    const booking = await roomBookingService.createBooking(
+      entryId,
+      roomTypeId,
+      checkIn,
+      checkOut,
+      guests ?? []
+    );
 
     const response: ApiResponse<RoomBooking> = {
       success: true,
@@ -34,14 +26,13 @@ export async function createRoomBooking(req: Request, res: Response): Promise<vo
   } catch (error) {
     const err = error as Error;
 
-    if (err.message.includes("must not be empty") || err.message.includes("must be a positive")) {
-      const response: ApiResponse = { success: false, message: err.message };
-      res.status(400).json(response);
+    const clientErrors = ["must not be empty", "must be a positive", "required", "cannot be in the past", "must be after", "Invalid dates", "age must be", "No rooms available"];
+    if (clientErrors.some((s) => err.message.includes(s))) {
+      res.status(400).json({ success: false, message: err.message });
       return;
     }
 
     console.error("[createRoomBooking]", err);
-    const response: ApiResponse = { success: false, message: "An unexpected error occurred" };
-    res.status(500).json(response);
+    res.status(500).json({ success: false, message: "An unexpected error occurred" });
   }
 }

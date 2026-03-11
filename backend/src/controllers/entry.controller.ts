@@ -17,10 +17,10 @@ const entryService = new EntryService();
  *  4. Return 400 for validation errors, 500 for unexpected errors.
  */
 export async function submitEntry(req: Request, res: Response): Promise<void> {
-  const { textValue, email } = req.body as SubmitRequest;
+  const { textValue, email, phone } = req.body as SubmitRequest;
 
   try {
-    const entry = await entryService.submitEntry(textValue, email);
+    const entry = await entryService.submitEntry(textValue, email, phone);
 
     const response: ApiResponse<Entry> = {
       success: true,
